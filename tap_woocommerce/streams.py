@@ -1,16 +1,4 @@
 """Stream type classes for tap-woocommerce."""
-
-from array import ArrayType
-from ast import Str
-from pathlib import Path
-from tokenize import String
-from typing import Any, Dict, Optional, Union, List, Iterable
-from xml.dom.minicompat import StringTypes
-from xmlrpc.client import boolean
-from numpy import integer
-from pandas import array
-from pendulum import time
-
 from singer_sdk import typing as th  # JSON Schema typing helpers
 
 from tap_woocommerce.client import WooCommerceStream

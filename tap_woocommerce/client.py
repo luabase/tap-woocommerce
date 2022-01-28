@@ -52,9 +52,9 @@ class WooCommerceStream(RESTStream):
         wcapi = API(
             url=self.config["site_url"],
             consumer_key=self.config["consumer_key"],
-            consumer_secret=self.config["consumer_secret"]
+            consumer_secret=self.config["consumer_secret"],
+            timeout=900
         )
-
         # Start at page 1
         next_page_token: int = 1
         finished = False
