@@ -144,16 +144,6 @@ class ProductsStream(WooCommerceStream):
         th.Property("variations", th.ArrayType(th.IntegerType)),
         th.Property("grouped_products", th.ArrayType(th.IntegerType)),
         th.Property("menu_order", th.IntegerType),
-        th.Property(
-            "meta_data",
-            th.ArrayType(
-                th.ObjectType(
-                    th.Property("id", th.IntegerType),
-                    th.Property("key", th.StringType),
-                    th.Property("value", th.StringType),
-                )
-            ),
-        ),
     ).to_dict()
 
 
@@ -227,16 +217,6 @@ class OrdersStream(WooCommerceStream):
         th.Property("date_completed_gmt", th.DateTimeType),
         th.Property("cart_hash", th.StringType),
         th.Property(
-            "meta_data",
-            th.ArrayType(
-                th.ObjectType(
-                    th.Property("id", th.IntegerType),
-                    th.Property("key", th.StringType),
-                    th.Property("value", th.StringType),
-                )
-            ),
-        ),
-        th.Property(
             "line_items",
             th.ArrayType(
                 th.ObjectType(
@@ -256,31 +236,11 @@ class OrdersStream(WooCommerceStream):
                             th.ObjectType(
                                 th.Property("id", th.IntegerType),
                                 th.Property("rate_code", th.StringType),
-                                th.Property("rate_id", th.StringType),
+                                th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
                                 th.Property("compound", th.BooleanType),
                                 th.Property("tax_total", th.StringType),
                                 th.Property("shipping_tax_total", th.StringType),
-                                th.Property(
-                                    "meta_data",
-                                    th.ArrayType(
-                                        th.ObjectType(
-                                            th.Property("id", th.IntegerType),
-                                            th.Property("key", th.StringType),
-                                            th.Property("value", th.StringType),
-                                        ),
-                                    ),
-                                ),
-                            )
-                        ),
-                    ),
-                    th.Property(
-                        "meta_data",
-                        th.ArrayType(
-                            th.ObjectType(
-                                th.Property("id", th.IntegerType),
-                                th.Property("key", th.StringType),
-                                th.Property("value", th.StringType),
                             )
                         ),
                     ),
@@ -295,21 +255,11 @@ class OrdersStream(WooCommerceStream):
                 th.ObjectType(
                     th.Property("id", th.IntegerType),
                     th.Property("rate_code", th.StringType),
-                    th.Property("rate_id", th.StringType),
+                    th.Property("rate_id", th.IntegerType),
                     th.Property("label", th.StringType),
                     th.Property("compound", th.BooleanType),
                     th.Property("tax_total", th.StringType),
                     th.Property("shipping_tax_total", th.StringType),
-                    th.Property(
-                        "meta_data",
-                        th.ArrayType(
-                            th.ObjectType(
-                                th.Property("id", th.IntegerType),
-                                th.Property("key", th.StringType),
-                                th.Property("value", th.StringType),
-                            )
-                        ),
-                    ),
                 )
             ),
         ),
@@ -326,33 +276,12 @@ class OrdersStream(WooCommerceStream):
                         "taxes",
                         th.ArrayType(
                             th.ObjectType(
-                                th.Property("id", th.IntegerType),
                                 th.Property("rate_code", th.StringType),
-                                th.Property("rate_id", th.StringType),
+                                th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
                                 th.Property("compound", th.BooleanType),
                                 th.Property("tax_total", th.StringType),
                                 th.Property("shipping_tax_total", th.StringType),
-                                th.Property(
-                                    "meta_data",
-                                    th.ArrayType(
-                                        th.ObjectType(
-                                            th.Property("id", th.IntegerType),
-                                            th.Property("key", th.StringType),
-                                            th.Property("value", th.StringType),
-                                        )
-                                    ),
-                                ),
-                            )
-                        ),
-                    ),
-                    th.Property(
-                        "meta_data",
-                        th.ArrayType(
-                            th.ObjectType(
-                                th.Property("id", th.IntegerType),
-                                th.Property("key", th.StringType),
-                                th.Property("value", th.StringType),
                             )
                         ),
                     ),
@@ -375,31 +304,11 @@ class OrdersStream(WooCommerceStream):
                             th.ObjectType(
                                 th.Property("id", th.IntegerType),
                                 th.Property("rate_code", th.StringType),
-                                th.Property("rate_id", th.StringType),
+                                th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
                                 th.Property("compound", th.BooleanType),
                                 th.Property("tax_total", th.StringType),
                                 th.Property("shipping_tax_total", th.StringType),
-                                th.Property(
-                                    "meta_data",
-                                    th.ArrayType(
-                                        th.ObjectType(
-                                            th.Property("id", th.IntegerType),
-                                            th.Property("key", th.StringType),
-                                            th.Property("value", th.StringType),
-                                        )
-                                    ),
-                                ),
-                            )
-                        ),
-                    ),
-                    th.Property(
-                        "meta_data",
-                        th.ArrayType(
-                            th.ObjectType(
-                                th.Property("id", th.IntegerType),
-                                th.Property("key", th.StringType),
-                                th.Property("value", th.StringType),
                             )
                         ),
                     ),
@@ -414,16 +323,6 @@ class OrdersStream(WooCommerceStream):
                     th.Property("code", th.StringType),
                     th.Property("discount", th.StringType),
                     th.Property("discount_tax", th.StringType),
-                    th.Property(
-                        "meta_data",
-                        th.ArrayType(
-                            th.ObjectType(
-                                th.Property("id", th.IntegerType),
-                                th.Property("key", th.StringType),
-                                th.Property("value", th.StringType),
-                            )
-                        ),
-                    ),
                 ),
             ),
         ),
@@ -432,7 +331,7 @@ class OrdersStream(WooCommerceStream):
             th.ArrayType(
                 th.ObjectType(
                     th.Property("id", th.IntegerType),
-                    th.Property("reason", th.IntegerType),
+                    th.Property("reason", th.StringType),
                     th.Property("total", th.StringType),
                 )
             ),
@@ -473,15 +372,5 @@ class CouponsStream(WooCommerceStream):
         th.Property("minimum_amount", th.StringType),
         th.Property("maximum_amount", th.StringType),
         th.Property("email_restrictions", th.ArrayType(th.StringType)),
-        th.Property("used_by", th.ArrayType(th.IntegerType)),
-        th.Property(
-            "meta_data",
-            th.ArrayType(
-                th.ObjectType(
-                    th.Property("id", th.IntegerType),
-                    th.Property("key", th.StringType),
-                    th.Property("value", th.StringType),
-                )
-            ),
-        ),
+        th.Property("used_by", th.ArrayType(th.StringType)),
     ).to_dict()
