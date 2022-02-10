@@ -27,8 +27,11 @@ class WooCommerceStream(RESTStream):
     ) -> Optional[Any]:
         """Return a token for identifying next page or None if no more pages."""
         # Get the total pages header
+        total_pages = response.headers.get("X-WP-TotalPages")
+        if total_pages is None:
+            return None
+        
         total_pages = int(response.headers.get("X-WP-TotalPages"))
-
         # Only increment the next token if there is another page
         if previous_token is not None and total_pages > previous_token:
             return previous_token + 1
