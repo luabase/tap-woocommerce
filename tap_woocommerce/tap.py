@@ -19,7 +19,6 @@ class TapWooCommerce(Tap):
     """WooCommerce tap class."""
     name = "tap-woocommerce"
 
-    # TODO: Update this section with the actual config values you expect:
     config_jsonschema = th.PropertiesList(
         th.Property("consumer_key", th.StringType, required=True),
         th.Property("consumer_secret", th.StringType, required=True),

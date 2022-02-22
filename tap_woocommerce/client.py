@@ -30,8 +30,8 @@ class WooCommerceStream(RESTStream):
         total_pages = response.headers.get("X-WP-TotalPages")
         if total_pages is None:
             return None
-        
-        total_pages = int(response.headers.get("X-WP-TotalPages"))
+
+        total_pages = int(total_pages)
         # Only increment the next token if there is another page
         if previous_token is not None and total_pages > previous_token:
             return previous_token + 1
@@ -43,8 +43,17 @@ class WooCommerceStream(RESTStream):
     ) -> Dict[str, Any]:
         """Return a dictionary of values to be used in URL parameterization."""
         params: dict = {}
+        params["per_page"] = 100
+        params["order"] = "asc"
+        params["orderby"] = "modified"
         if next_page_token:
             params["page"] = next_page_token
+        if self.replication_key:
+            start_date = self.get_starting_timestamp(context).replace(tzinfo=None)
+            params["modified_after"] = start_date.isoformat()
+            params["after"] = start_date.isoformat()
+            params["date_query_column"] = "post_modified"
+            
         return params
 
     def request_records(self, context: Optional[dict]) -> Iterable[dict]:
@@ -59,7 +68,7 @@ class WooCommerceStream(RESTStream):
             timeout=900
         )
         # Start at page 1
-        next_page_token: int = 1
+        next_page_token = 1
         finished = False
         while not finished:
             params = self.get_url_params(context, next_page_token=next_page_token)
