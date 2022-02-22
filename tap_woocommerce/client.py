@@ -51,6 +51,8 @@ class WooCommerceStream(RESTStream):
         if self.replication_key:
             start_date = self.get_starting_timestamp(context).replace(tzinfo=None)
             params["modified_after"] = start_date.isoformat()
+            params["after"] = start_date.isoformat()
+            params["date_query_column"] = "post_modified"
             
         return params
 
