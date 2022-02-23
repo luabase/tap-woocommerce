@@ -45,7 +45,6 @@ class WooCommerceStream(RESTStream):
         params: dict = {}
         params["per_page"] = 100
         params["order"] = "asc"
-        params["orderby"] = "modified"
         if next_page_token:
             params["page"] = next_page_token
         if self.replication_key:
