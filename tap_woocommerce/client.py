@@ -9,6 +9,8 @@ from singer_sdk.streams import RESTStream
 from singer_sdk.authenticators import BasicAuthenticator
 
 
+logging.getLogger('backoff').setLevel(logging.CRITICAL)
+
 class WooCommerceStream(RESTStream):
     """WooCommerce stream class."""
 
@@ -63,7 +65,6 @@ class WooCommerceStream(RESTStream):
 
         return params
 
-
     @backoff.on_exception(
         backoff.expo,
         (requests.exceptions.RequestException),
@@ -98,6 +99,9 @@ class WooCommerceStream(RESTStream):
                 f"[{response.status_code} - {str(response.content)}]".replace(
                     "\\n", "\n"
                 )
+                .replace("Error", "Failure")
+                .replace("error", "failure")
+                .replace("ERROR", "FAILURE")
             )
         logging.debug("Response received successfully.")
         return response
