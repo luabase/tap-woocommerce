@@ -65,6 +65,13 @@ class WooCommerceStream(RESTStream):
 
         return params
 
+    @property
+    def http_headers(self) -> dict:
+        """Return headers dict to be used for HTTP requests."""
+        result = self._http_headers
+        result["User-Agent"] = self.config.get("user_agent", "hotglue/woocommerce")
+        return result
+
     @backoff.on_exception(
         backoff.expo,
         (requests.exceptions.RequestException),
