@@ -1,15 +1,18 @@
 """REST client handling, including WooCommerceStream base class."""
 
-import requests
-import backoff
 import logging
-from typing import Any, Dict, Optional, cast
+from datetime import datetime, timedelta
+from typing import Any, Dict, Iterable, Optional, cast
 
-from singer_sdk.streams import RESTStream
+import backoff
+import requests
+from random_user_agent.user_agent import UserAgent
 from singer_sdk.authenticators import BasicAuthenticator
+from singer_sdk.helpers.jsonpath import extract_jsonpath
+from singer_sdk.streams import RESTStream
 
+logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
-logging.getLogger('backoff').setLevel(logging.CRITICAL)
 
 class WooCommerceStream(RESTStream):
     """WooCommerce stream class."""
@@ -20,7 +23,21 @@ class WooCommerceStream(RESTStream):
         site_url = self.config["site_url"]
         return f"{site_url}/wp-json/wc/v3/"
 
+    def get_wc_version(self):
+        status_url = f"{self.url_base}system_status"
+        headers = self.http_headers
+        headers.update(self.authenticator.auth_headers or {})
+        result = self.requests_session.get(url=status_url, headers=headers)
+        result_dict = result.json()
+        wc_version = result_dict["environment"].get("version")
+        wc_version = float(wc_version[:-2])
+        if wc_version >= 5.8:
+            return True
+        return False
+
     records_jsonpath = "$[*]"
+    user_agents = UserAgent(software_engines="blink", software_names="chrome")
+    new_version = None
 
     @property
     def authenticator(self) -> BasicAuthenticator:
@@ -52,24 +69,43 @@ class WooCommerceStream(RESTStream):
         self, context: Optional[dict], next_page_token: Optional[Any]
     ) -> Dict[str, Any]:
         """Return a dictionary of values to be used in URL parameterization."""
+
+        if self.new_version == None:
+            self.new_version = self.get_wc_version()
+
         params: dict = {}
         params["per_page"] = 100
         params["order"] = "asc"
         if next_page_token:
             params["page"] = next_page_token
         if self.replication_key:
-            start_date = self.get_starting_timestamp(context).replace(tzinfo=None)
-            params["modified_after"] = start_date.isoformat()
-            params["after"] = start_date.isoformat()
-            params["date_query_column"] = "post_modified"
-
+            self.start_date = self.get_starting_timestamp(context).replace(tzinfo=None)
+            if self.new_version:
+                params["modified_after"] = self.start_date.isoformat()
+            else:
+                lookup_days = self.config.get("check_modify_date", 60)
+                params["after"] = (self.start_date - timedelta(days=lookup_days)).isoformat()
         return params
+
+    def parse_response(self, response: requests.Response) -> Iterable[dict]:
+        """Parse the response and return an iterator of result rows."""
+        if self.replication_key and not self.new_version:
+            for record in extract_jsonpath(
+                self.records_jsonpath, input=response.json()
+            ):
+                record_mod_date = datetime.strptime(
+                    record[self.replication_key], "%Y-%m-%dT%H:%M:%S"
+                )
+                if record_mod_date > self.start_date:
+                    yield record
+        else:
+            yield from extract_jsonpath(self.records_jsonpath, input=response.json())
 
     @property
     def http_headers(self) -> dict:
         """Return headers dict to be used for HTTP requests."""
         result = self._http_headers
-        result["User-Agent"] = self.config.get("user_agent", "hotglue/woocommerce")
+        result["User-Agent"] = self.user_agents.get_random_user_agent()
         return result
 
     @backoff.on_exception(
@@ -92,7 +128,7 @@ class WooCommerceStream(RESTStream):
                 context=context,
                 extra_tags=extra_tags,
             )
-        if response.status_code in [401, 403, 404]:
+        if response.status_code in [401, 404]:
             self.logger.info("Failed request for {}".format(prepared_request.url))
             self.logger.info(
                 f"Reason: {response.status_code} - {str(response.content)}"

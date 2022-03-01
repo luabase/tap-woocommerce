@@ -1,6 +1,5 @@
 """Stream type classes for tap-woocommerce."""
 from singer_sdk import typing as th  # JSON Schema typing helpers
-
 from tap_woocommerce.client import WooCommerceStream
 
 
