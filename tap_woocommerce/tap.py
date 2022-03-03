@@ -5,13 +5,20 @@ from typing import List
 from pip import main
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th  # JSON schema typing helpers
-from tap_woocommerce.streams import (CouponsStream, OrdersStream,
-                                     ProductsStream, WooCommerceStream)
+
+from tap_woocommerce.streams import (
+    WooCommerceStream, 
+    ProductsStream, 
+    OrdersStream, 
+    CouponsStream,
+    ProductVarianceStream
+)
 
 STREAM_TYPES = [
     ProductsStream,
     OrdersStream,
-    CouponsStream
+    CouponsStream,
+    ProductVarianceStream
 ]
 
 
@@ -23,7 +30,7 @@ class TapWooCommerce(Tap):
         th.Property("consumer_key", th.StringType, required=True),
         th.Property("consumer_secret", th.StringType, required=True),
         th.Property("site_url", th.StringType, required=True),
-        th.Property("start_date", th.DateTimeType)
+        th.Property("start_date", th.DateTimeType, default="2000-01-01T00:00:00.000Z")
     ).to_dict()
 
     def discover_streams(self) -> List[Stream]:
