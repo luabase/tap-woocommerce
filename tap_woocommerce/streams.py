@@ -663,3 +663,73 @@ class SubscriptionStream(WooCommerceStream):
         th.Property("date_created_gmt", th.DateTimeType),
         th.Property("date_modified_gmt", th.DateTimeType),
     ).to_dict()
+
+class CustomersStream(WooCommerceStream):
+    """Define custom stream."""
+
+    name = "customers"
+    path = "customers"
+    primary_keys = ["id", "date_modified"]
+    replication_key = "date_modified"
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType),
+        th.Property("date_created", th.DateTimeType),
+        th.Property("date_modified", th.DateTimeType),
+        th.Property("date_created_gmt", th.DateTimeType),
+        th.Property("date_modified_gmt", th.DateTimeType),
+        th.Property("email", th.StringType),
+        th.Property("first_name", th.StringType),
+        th.Property("last_name", th.StringType),
+        th.Property("role", th.StringType),
+        th.Property("username", th.StringType),
+         th.Property(
+            "billing",
+            th.ObjectType(
+                th.Property("first_name", th.StringType),
+                th.Property("last_name", th.StringType),
+                th.Property("company", th.StringType),
+                th.Property("address_1", th.StringType),
+                th.Property("address_2", th.StringType),
+                th.Property("city", th.StringType),
+                th.Property("state", th.StringType),
+                th.Property("postcode", th.StringType),
+                th.Property("country", th.StringType),
+                th.Property("email", th.StringType),
+                th.Property("phone", th.StringType),
+            ),
+        ),
+        th.Property(
+            "shipping",
+            th.ObjectType(
+                th.Property("first_name", th.StringType),
+                th.Property("last_name", th.StringType),
+                th.Property("company", th.StringType),
+                th.Property("address_1", th.StringType),
+                th.Property("address_2", th.StringType),
+                th.Property("city", th.StringType),
+                th.Property("state", th.StringType),
+                th.Property("postcode", th.StringType),
+                th.Property("country", th.StringType),
+            ),
+        ),
+        th.Property('is_paying_customer',th.BooleanType),
+        th.Property('avatar_url',th.StringType),
+        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "th.StringType"]}))),
+        th.Property('_links',th.ObjectType(
+            th.Property('self',th.ArrayType(
+                th.ObjectType(
+                    th.Property('href',th.StringType)
+                )
+            )),
+            th.Property('collection',th.ArrayType(
+                th.ObjectType(
+                    th.Property('href',th.StringType)
+                )
+            )),
+            th.Property('customer',th.ArrayType(
+                th.ObjectType(
+                    th.Property('href',th.StringType)
+                )
+            )),
+        ))
+    ).to_dict()
