@@ -11,14 +11,16 @@ from tap_woocommerce.streams import (
     ProductsStream, 
     OrdersStream, 
     CouponsStream,
-    ProductVarianceStream
+    ProductVarianceStream,
+    SubscriptionStream
 )
 
 STREAM_TYPES = [
     ProductsStream,
     OrdersStream,
     CouponsStream,
-    ProductVarianceStream
+    ProductVarianceStream,
+    SubscriptionStream
 ]
 
 
