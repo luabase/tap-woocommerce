@@ -105,7 +105,7 @@ class WooCommerceStream(RESTStream):
     def http_headers(self) -> dict:
         """Return headers dict to be used for HTTP requests."""
         result = self._http_headers
-        result["User-Agent"] = self.user_agents.get_random_user_agent()
+        result["User-Agent"] = self.user_agents.get_random_user_agent().strip()
         return result
 
     @backoff.on_exception(
