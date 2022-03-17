@@ -34,7 +34,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("sku", th.StringType),
         th.Property("price", th.StringType),
         th.Property("regular_price", th.StringType),
-        th.Property("sale_price", th.StringType),
+        th.Property("sale_price", th.CustomType({"type": ["string", "number"]})),
         th.Property("date_on_sale_from", th.DateTimeType),
         th.Property("date_on_sale_to", th.DateTimeType),
         th.Property("price_html", th.StringType),
