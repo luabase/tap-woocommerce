@@ -29,6 +29,8 @@ class WooCommerceStream(RESTStream):
         headers.update(self.authenticator.auth_headers or {})
         result = self.requests_session.get(url=status_url, headers=headers)
         result_dict = result.json()
+        if not result_dict.get("environment"):
+            return True
         wc_version = result_dict["environment"].get("version")
         wc_version = float(wc_version[:-2])
         if wc_version >= 5.8:
