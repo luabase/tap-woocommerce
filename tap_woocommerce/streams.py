@@ -24,7 +24,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("date_modified_gmt", th.DateTimeType),
         th.Property("date_on_sale_from_gmt", th.DateTimeType),
         th.Property("date_on_sale_to_gmt", th.DateTimeType),
-        th.Property("low_stock_amount", th.NumberType),
+        th.Property("low_stock_amount", th.CustomType({"type": ["string", "number"]})),
         th.Property("type", th.StringType),
         th.Property("status", th.StringType),
         th.Property("featured", th.BooleanType),
@@ -32,6 +32,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("description", th.StringType),
         th.Property("short_description", th.StringType),
         th.Property("sku", th.StringType),
+        th.Property("brands", th.CustomType({"type": ["array", "string"]})),
         th.Property("price", th.CustomType({"type": ["string", "number"]})),
         th.Property("regular_price", th.CustomType({"type": ["string", "number"]})),
         th.Property("sale_price", th.CustomType({"type": ["string", "number"]})),
@@ -40,7 +41,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("price_html", th.StringType),
         th.Property("on_sale", th.BooleanType),
         th.Property("purchasable", th.BooleanType),
-        th.Property("total_sales", th.IntegerType),
+        th.Property("total_sales", th.CustomType({"type": ["string", "number"]})),
         th.Property("virtual", th.BooleanType),
         th.Property("downloadable", th.BooleanType),
         th.Property(
@@ -170,6 +171,7 @@ class OrdersStream(WooCommerceStream):
         th.Property("version", th.StringType),
         th.Property("status", th.StringType),
         th.Property("currency", th.StringType),
+        th.Property("currency_symbol", th.StringType),
         th.Property("date_created", th.DateTimeType),
         th.Property("date_created_gmt", th.DateTimeType),
         th.Property("date_modified", th.DateTimeType),
@@ -447,7 +449,7 @@ class ProductVarianceStream(WooCommerceStream):
       
     ))),
     th.Property("menu_order", th.IntegerType),
-    th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "th.StringType"]}))),
+    th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
     th.Property("_links", th.ObjectType(
       th.Property("self", th.ArrayType(th.ObjectType(
         
@@ -546,7 +548,7 @@ class SubscriptionStream(WooCommerceStream):
                         th.Property('subtotal',th.StringType),
                     )
                 )),
-                th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "th.StringType"]}))),
+                th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
                 th.Property("sku", th.StringType),
                 th.Property("price", th.NumberType),
                 th.Property("parent_name", th.StringType),
@@ -562,7 +564,7 @@ class SubscriptionStream(WooCommerceStream):
                 th.Property('tax_total',th.StringType),
                 th.Property('shipping_tax_total ',th.StringType),
                 th.Property('rate_percent ',th.NumberType),
-                th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "th.StringType"]}))),
+                th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
             )
         )),
         th.Property(
@@ -640,7 +642,7 @@ class SubscriptionStream(WooCommerceStream):
         th.Property("end_date_gmt", th.DateTimeType),
         th.Property("resubscribed_from", th.StringType),
         th.Property("resubscribed_subscription", th.StringType),
-        th.Property("removed_line_items", th.ArrayType(th.CustomType({"type": ["object", "th.StringType"]}))),
+        th.Property("removed_line_items", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
         th.Property('_links',th.ObjectType(
             th.Property('self',th.ArrayType(
                 th.ObjectType(
@@ -714,7 +716,7 @@ class CustomersStream(WooCommerceStream):
         ),
         th.Property('is_paying_customer',th.BooleanType),
         th.Property('avatar_url',th.StringType),
-        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "th.StringType"]}))),
+        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
         th.Property('_links',th.ObjectType(
             th.Property('self',th.ArrayType(
                 th.ObjectType(
