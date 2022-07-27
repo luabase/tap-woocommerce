@@ -27,8 +27,11 @@ class WooCommerceStream(RESTStream):
         status_url = f"{self.url_base}system_status"
         headers = self.http_headers
         headers.update(self.authenticator.auth_headers or {})
-        result = self.requests_session.get(url=status_url, headers=headers)
-        result_dict = result.json()
+        try:
+            result = self.requests_session.get(url=status_url, headers=headers)
+            result_dict = result.json()
+        except:
+            return True
         if not result_dict.get("environment"):
             return True
         wc_version = result_dict["environment"].get("version")
@@ -108,6 +111,7 @@ class WooCommerceStream(RESTStream):
     def http_headers(self) -> dict:
         """Return headers dict to be used for HTTP requests."""
         result = self._http_headers
+        result["Content-Type"] = "application/json"
         result["User-Agent"] = self.user_agents.get_random_user_agent().strip()
         return result
 
