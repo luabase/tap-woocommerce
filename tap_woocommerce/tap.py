@@ -13,7 +13,8 @@ from tap_woocommerce.streams import (
     CouponsStream,
     ProductVarianceStream,
     SubscriptionStream,
-    CustomersStream
+    CustomersStream,
+    StoreSettingsStream
 )
 
 STREAM_TYPES = [
@@ -22,7 +23,8 @@ STREAM_TYPES = [
     CouponsStream,
     ProductVarianceStream,
     SubscriptionStream,
-    CustomersStream
+    CustomersStream,
+    StoreSettingsStream
 ]
 
 

@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "tap-woocommerce"
-version = "0.0.19"
+version = "0.0.20"
 description = "`tap-woocommerce` is a Singer tap for WooCommerce, built with the Meltano SDK for Singer Taps."
 authors = ["hotglue"]
 license = "Apache 2.0"
 
 [tool.poetry.dependencies]
-python = "<3.9,>=3.6.1"
+python = "<3.10,>=3.6.1"
 requests = "^2.25.1"
 singer-sdk = "^0.3.3"
 random-user-agent = "^1.0.1"
