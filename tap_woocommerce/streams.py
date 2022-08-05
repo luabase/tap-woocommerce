@@ -735,3 +735,21 @@ class CustomersStream(WooCommerceStream):
             )),
         ))
     ).to_dict()
+
+class StoreSettingsStream(WooCommerceStream):
+    """Define settings stream."""
+
+    name = "store_settings"
+    path = "settings/general"
+    primary_keys = ["id"]
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("label", th.StringType),
+        th.Property("description", th.StringType),
+        th.Property("type", th.StringType),
+        th.Property("default", th.StringType),
+        th.Property("tip", th.StringType),
+        th.Property("value", th.CustomType({"type": ["array", "string"]})),
+        th.Property("group_id", th.StringType)
+    ).to_dict()
