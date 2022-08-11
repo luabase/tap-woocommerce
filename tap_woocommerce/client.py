@@ -10,6 +10,7 @@ from random_user_agent.user_agent import UserAgent
 from singer_sdk.authenticators import BasicAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
+from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
@@ -60,6 +61,9 @@ class WooCommerceStream(RESTStream):
         """Return a token for identifying next page or None if no more pages."""
         # Get the total pages header
         total_pages = response.headers.get("X-WP-TotalPages")
+        if response.status_code >= 400:
+            total_pages = previous_token + 1
+
         if total_pages is None:
             return None
 
@@ -95,6 +99,8 @@ class WooCommerceStream(RESTStream):
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse the response and return an iterator of result rows."""
+        if response.status_code >= 500 and self.config.get("ignore_server_errors"):
+            return []
         if self.replication_key and not self.new_version:
             for record in extract_jsonpath(
                 self.records_jsonpath, input=response.json()
@@ -115,43 +121,19 @@ class WooCommerceStream(RESTStream):
         result["User-Agent"] = self.user_agents.get_random_user_agent().strip()
         return result
 
-    @backoff.on_exception(
-        backoff.expo,
-        (requests.exceptions.RequestException),
-        max_tries=5,
-        factor=2,
-    )
-    def _request_with_backoff(
-        self, prepared_request, context: Optional[dict]
-    ) -> requests.Response:
-        response = self.requests_session.send(prepared_request)
-        if self._LOG_REQUEST_METRICS:
-            extra_tags = {}
-            if self._LOG_REQUEST_METRIC_URLS:
-                extra_tags["url"] = cast(str, prepared_request.path_url)
-            self._write_request_duration_log(
-                endpoint=self.path,
-                response=response,
-                context=context,
-                extra_tags=extra_tags,
+    def validate_response(self, response: requests.Response) -> None:
+        """Validate HTTP response."""
+        if response.status_code >= 500 and self.config.get("ignore_server_errors"):
+            pass
+        elif 500 <= response.status_code < 600 or response.status_code in [429]:
+            msg = (
+                f"{response.status_code} Server Error: "
+                f"{response.reason} for path: {self.path}"
             )
-        if response.status_code in [401, 404]:
-            self.logger.info("Failed request for {}".format(prepared_request.url))
-            self.logger.info(
-                f"Reason: {response.status_code} - {str(response.content)}"
+            raise RetriableAPIError(msg)
+        elif 400 <= response.status_code < 500:
+            msg = (
+                f"{response.status_code} Client Error: "
+                f"{response.reason} for path: {self.path}"
             )
-            raise RuntimeError(
-                "Requested resource was unauthorized, forbidden, or not found."
-            )
-        elif response.status_code >= 400:
-            raise requests.exceptions.RequestException(
-                f"Failed making request to API: {prepared_request.url} "
-                f"[{response.status_code} - {str(response.content)}]".replace(
-                    "\\n", "\n"
-                )
-                .replace("Error", "Failure")
-                .replace("error", "failure")
-                .replace("ERROR", "FAILURE")
-            )
-        logging.debug("Response received successfully.")
-        return response
+            raise FatalAPIError(msg)
