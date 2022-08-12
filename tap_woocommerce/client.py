@@ -18,6 +18,8 @@ logging.getLogger("backoff").setLevel(logging.CRITICAL)
 class WooCommerceStream(RESTStream):
     """WooCommerce stream class."""
 
+    error_counter = 0
+
     @property
     def url_base(self) -> str:
         """Return the API URL root, configurable via tap settings."""
@@ -63,6 +65,8 @@ class WooCommerceStream(RESTStream):
         total_pages = response.headers.get("X-WP-TotalPages")
         if response.status_code >= 400:
             total_pages = previous_token + 1
+        else:
+            self.error_counter = 0
 
         if total_pages is None:
             return None
@@ -99,7 +103,7 @@ class WooCommerceStream(RESTStream):
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse the response and return an iterator of result rows."""
-        if response.status_code >= 500 and self.config.get("ignore_server_errors"):
+        if response.status_code>=400 and self.config.get("ignore_server_errors"):
             return []
         if self.replication_key and not self.new_version:
             for record in extract_jsonpath(
@@ -123,8 +127,8 @@ class WooCommerceStream(RESTStream):
 
     def validate_response(self, response: requests.Response) -> None:
         """Validate HTTP response."""
-        if response.status_code >= 500 and self.config.get("ignore_server_errors"):
-            pass
+        if response.status_code >= 400 and self.config.get("ignore_server_errors") and self.error_counter<10:
+            self.error_counter += 1
         elif 500 <= response.status_code < 600 or response.status_code in [429]:
             msg = (
                 f"{response.status_code} Server Error: "
