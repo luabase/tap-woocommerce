@@ -64,6 +64,7 @@ class WooCommerceStream(RESTStream):
         # Get the total pages header
         total_pages = response.headers.get("X-WP-TotalPages")
         if response.status_code >= 400:
+            previous_token = previous_token or 1
             total_pages = previous_token + 1
         else:
             self.error_counter = 0
