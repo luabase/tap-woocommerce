@@ -147,6 +147,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("variations", th.ArrayType(th.IntegerType)),
         th.Property("grouped_products", th.ArrayType(th.IntegerType)),
         th.Property("menu_order", th.IntegerType),
+        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
     ).to_dict()
 
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
