@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterable, Optional, cast
+from typing import Any, Dict, Iterable, Optional, cast, Callable
 
 import backoff
 import requests
@@ -130,7 +130,7 @@ class WooCommerceStream(RESTStream):
         """Validate HTTP response."""
         if response.status_code >= 400 and self.config.get("ignore_server_errors") and self.error_counter<10:
             self.error_counter += 1
-        elif 500 <= response.status_code < 600 or response.status_code in [429]:
+        elif 500 <= response.status_code < 600 or response.status_code in [429, 403]:
             msg = (
                 f"{response.status_code} Server Error: "
                 f"{response.reason} for path: {self.path}"
@@ -142,3 +142,17 @@ class WooCommerceStream(RESTStream):
                 f"{response.reason} for path: {self.path}"
             )
             raise FatalAPIError(msg)
+
+    def request_decorator(self, func: Callable) -> Callable:
+        """Instantiate a decorator for handling request failures."""
+        decorator: Callable = backoff.on_exception(
+            backoff.expo,
+            (
+                RetriableAPIError,
+                requests.exceptions.ReadTimeout,
+                requests.exceptions.ConnectionError
+            ),
+            max_tries=8,
+            factor=2,
+        )(func)
+        return decorator
