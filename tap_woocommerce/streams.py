@@ -383,7 +383,7 @@ class CouponsStream(WooCommerceStream):
         th.Property("minimum_amount", th.StringType),
         th.Property("maximum_amount", th.StringType),
         th.Property("email_restrictions", th.ArrayType(th.StringType)),
-        th.Property("used_by", th.ArrayType(th.StringType)),
+        th.Property("used_by", th.CustomType({"type": ["array", "object", "string"]})),
     ).to_dict()
 
 
