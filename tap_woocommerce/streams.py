@@ -245,7 +245,7 @@ class OrdersStream(WooCommerceStream):
                         "taxes",
                         th.ArrayType(
                             th.ObjectType(
-                                th.Property("id", th.IntegerType),
+                                th.Property("id", th.CustomType({"type": ["integer", "string"]})),
                                 th.Property("rate_code", th.StringType),
                                 th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
@@ -313,7 +313,7 @@ class OrdersStream(WooCommerceStream):
                         "taxes",
                         th.ArrayType(
                             th.ObjectType(
-                                th.Property("id", th.IntegerType),
+                                th.Property("id", th.CustomType({"type": ["integer", "string"]})),
                                 th.Property("rate_code", th.StringType),
                                 th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
@@ -544,7 +544,7 @@ class SubscriptionStream(WooCommerceStream):
                 th.Property('total_tax',th.StringType),
                 th.Property('taxes',th.ArrayType(
                     th.ObjectType(
-                        th.Property('id',th.NumberType),
+                        th.Property('id',th.CustomType({"type": ["integer", "string"]})),
                         th.Property('total',th.StringType),
                         th.Property('subtotal',th.StringType),
                     )
@@ -607,7 +607,7 @@ class SubscriptionStream(WooCommerceStream):
                         "taxes",
                         th.ArrayType(
                             th.ObjectType(
-                                th.Property("id", th.IntegerType),
+                                th.Property("id", th.CustomType({"type": ["integer", "string"]})),
                                 th.Property("rate_code", th.StringType),
                                 th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
