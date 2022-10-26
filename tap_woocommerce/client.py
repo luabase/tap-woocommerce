@@ -102,6 +102,28 @@ class WooCommerceStream(RESTStream):
                 params["after"] = (self.start_date - timedelta(days=lookup_days)).isoformat()
         return params
 
+    def _request(
+        self, prepared_request: requests.PreparedRequest, context: Optional[dict]
+    ) -> requests.Response:
+
+        # Refresh the User-Agent on every request.
+        prepared_request.headers["User-Agent"] = self.user_agents.get_random_user_agent().strip()
+
+        response = self.requests_session.send(prepared_request, timeout=self.timeout)
+        if self._LOG_REQUEST_METRICS:
+            extra_tags = {}
+            if self._LOG_REQUEST_METRIC_URLS:
+                extra_tags["url"] = prepared_request.path_url
+            self._write_request_duration_log(
+                endpoint=self.path,
+                response=response,
+                context=context,
+                extra_tags=extra_tags,
+            )
+        self.validate_response(response)
+        logging.debug("Response received successfully.")
+        return response
+
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse the response and return an iterator of result rows."""
         if response.status_code>=400 and self.config.get("ignore_server_errors"):
@@ -142,6 +164,10 @@ class WooCommerceStream(RESTStream):
                 f"{response.reason} for path: {self.path}"
             )
             raise FatalAPIError(msg)
+        try:
+            response.json()
+        except:
+            raise RetriableAPIError("Invalid JSON.")
 
     def request_decorator(self, func: Callable) -> Callable:
         """Instantiate a decorator for handling request failures."""
