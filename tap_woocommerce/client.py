@@ -40,7 +40,7 @@ class WooCommerceStream(RESTStream):
         wc_version = result_dict["environment"].get("version")
         wc_version = ".".join(wc_version.split(".")[:-1])
         wc_version = float(wc_version)
-        if wc_version >= 5.3:
+        if wc_version >= 5.6:
             return True
         return False
 
