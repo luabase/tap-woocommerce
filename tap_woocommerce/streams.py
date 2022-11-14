@@ -332,7 +332,7 @@ class OrdersStream(WooCommerceStream):
                 th.ObjectType(
                     th.Property("id", th.IntegerType),
                     th.Property("code", th.StringType),
-                    th.Property("discount", th.StringType),
+                    th.Property("discount", th.CustomType({"type": ["string", "number"]})),
                     th.Property("discount_tax", th.StringType),
                 ),
             ),
@@ -626,7 +626,7 @@ class SubscriptionStream(WooCommerceStream):
                 th.ObjectType(
                     th.Property("id", th.IntegerType),
                     th.Property("code", th.StringType),
-                    th.Property("discount", th.StringType),
+                    th.Property("discount", th.CustomType({"type": ["string", "number"]})),
                     th.Property("discount_tax", th.StringType),
                 ),
             ),
