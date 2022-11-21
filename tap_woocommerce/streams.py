@@ -152,9 +152,10 @@ class ProductsStream(WooCommerceStream):
 
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
         """Return a context dictionary for child streams."""
-        return {
-            "product_id": record["id"],
-        }
+        if record.get("type")=="variable":
+            return {
+                "product_id": record["id"],
+            }
 
 
 class OrdersStream(WooCommerceStream):
