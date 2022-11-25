@@ -91,6 +91,8 @@ class WooCommerceStream(RESTStream):
         params: dict = {}
         params["per_page"] = 100
         params["order"] = "asc"
+        params["consumer_key"] = self.config.get("consumer_key"),
+        params["consumer_secret"] = self.config.get("consumer_secret"),
         if next_page_token:
             params["page"] = next_page_token
         if self.replication_key:
