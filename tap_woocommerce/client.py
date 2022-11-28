@@ -184,3 +184,9 @@ class WooCommerceStream(RESTStream):
             factor=2,
         )(func)
         return decorator
+
+    def _sync_children(self, child_context: dict) -> None:
+        for child_stream in self.child_streams:
+            if child_stream.selected or child_stream.has_selected_descendents:
+                if child_context:
+                    child_stream.sync(context=child_context)
