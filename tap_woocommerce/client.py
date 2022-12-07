@@ -64,6 +64,8 @@ class WooCommerceStream(RESTStream):
         # Get the total pages header
         total_pages = response.headers.get("X-WP-TotalPages")
         if response.status_code >= 400:
+            if self.error_counter>20:
+                return None
             previous_token = previous_token or 1
             total_pages = previous_token + 1
         else:
@@ -152,7 +154,7 @@ class WooCommerceStream(RESTStream):
 
     def validate_response(self, response: requests.Response) -> None:
         """Validate HTTP response."""
-        if response.status_code >= 400 and self.config.get("ignore_server_errors") and self.error_counter<10:
+        if response.status_code >= 400 and self.config.get("ignore_server_errors"):
             self.error_counter += 1
         elif 500 <= response.status_code < 600 or response.status_code in [429, 403]:
             msg = (
