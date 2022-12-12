@@ -11,7 +11,7 @@ class ProductsStream(WooCommerceStream):
 
     name = "products"
     path = "products"
-    primary_keys = ["id", "date_modified"]
+    primary_keys = ["id"]
     replication_key = "date_modified"
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),
@@ -161,7 +161,7 @@ class ProductsStream(WooCommerceStream):
 class OrdersStream(WooCommerceStream):
     name = "orders"
     path = "orders"
-    primary_keys = ["id", "date_modified"]
+    primary_keys = ["id"]
     replication_key = "date_modified"
 
     schema = th.PropertiesList(
@@ -355,7 +355,7 @@ class OrdersStream(WooCommerceStream):
 class CouponsStream(WooCommerceStream):
     name = "coupons"
     path = "coupons"
-    primary_keys = ["id", "date_modified"]
+    primary_keys = ["id"]
     replication_key = "date_modified"
 
     schema = th.PropertiesList(
@@ -473,7 +473,7 @@ class SubscriptionStream(WooCommerceStream):
 
     name = "subscriptions"
     path = "subscriptions"
-    primary_keys = ["id", "date_modified"]
+    primary_keys = ["id"]
     replication_key = "date_modified"
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),
@@ -673,7 +673,7 @@ class CustomersStream(WooCommerceStream):
 
     name = "customers"
     path = "customers"
-    primary_keys = ["id", "date_modified"]
+    primary_keys = ["id"]
     replication_key = "date_modified"
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),

@@ -192,3 +192,9 @@ class WooCommerceStream(RESTStream):
             if child_stream.selected or child_stream.has_selected_descendents:
                 if child_context:
                     child_stream.sync(context=child_context)
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        if row.get(self.replication_key) is None:
+            if row.get("date_created"):
+                row[self.replication_key] = row["date_created"]
+        return row
