@@ -28,7 +28,7 @@ class WooCommerceStream(RESTStream):
 
     def get_wc_version(self):
         if self.config.get("use_old_version"):
-            False
+            return False
         status_url = f"{self.url_base}system_status"
         headers = self.http_headers
         headers.update(self.authenticator.auth_headers or {})
