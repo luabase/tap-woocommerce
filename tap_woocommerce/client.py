@@ -199,4 +199,6 @@ class WooCommerceStream(RESTStream):
         if row.get(self.replication_key) is None:
             if row.get("date_created"):
                 row[self.replication_key] = row["date_created"]
+            else:
+                row[self.replication_key] = datetime(1970,1,1)
         return row
