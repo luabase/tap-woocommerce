@@ -236,7 +236,7 @@ class OrdersStream(WooCommerceStream):
                     th.Property("name", th.StringType),
                     th.Property("product_id", th.IntegerType),
                     th.Property("variation_id", th.IntegerType),
-                    th.Property("quantity", th.IntegerType),
+                    th.Property("quantity", th.NumberType),
                     th.Property("tax_class", th.StringType),
                     th.Property("subtotal", th.StringType),
                     th.Property("subtotal_tax", th.StringType),
