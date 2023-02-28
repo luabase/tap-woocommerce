@@ -6,6 +6,7 @@ from typing import Any, Dict, Iterable, Optional, cast, Callable
 
 import backoff
 import requests
+from urllib3.exceptions import ProtocolError
 from random_user_agent.user_agent import UserAgent
 from singer_sdk.authenticators import BasicAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
@@ -182,7 +183,8 @@ class WooCommerceStream(RESTStream):
             (
                 RetriableAPIError,
                 requests.exceptions.ReadTimeout,
-                requests.exceptions.ConnectionError
+                requests.exceptions.ConnectionError,
+                ProtocolError
             ),
             max_tries=8,
             factor=2,
