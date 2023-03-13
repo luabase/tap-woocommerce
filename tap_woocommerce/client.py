@@ -174,7 +174,7 @@ class WooCommerceStream(RESTStream):
         try:
             response.json()
         except:
-            raise RetriableAPIError("Invalid JSON.")
+            raise RetriableAPIError(f"Invalid JSON: {response.text}")
 
     def request_decorator(self, func: Callable) -> Callable:
         """Instantiate a decorator for handling request failures."""
