@@ -6,6 +6,7 @@ from typing import Any, Dict, Iterable, Optional, cast, Callable
 
 import backoff
 import requests
+from urllib3.exceptions import ProtocolError
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem, Popularity
 from singer_sdk.authenticators import BasicAuthenticator
@@ -177,7 +178,7 @@ class WooCommerceStream(RESTStream):
         try:
             response.json()
         except:
-            raise RetriableAPIError("Invalid JSON.")
+            raise RetriableAPIError(f"Invalid JSON: {response.text}")
 
     def request_decorator(self, func: Callable) -> Callable:
         """Instantiate a decorator for handling request failures."""
@@ -186,7 +187,8 @@ class WooCommerceStream(RESTStream):
             (
                 RetriableAPIError,
                 requests.exceptions.ReadTimeout,
-                requests.exceptions.ConnectionError
+                requests.exceptions.ConnectionError,
+                ProtocolError
             ),
             max_tries=8,
             factor=2,
@@ -203,4 +205,6 @@ class WooCommerceStream(RESTStream):
         if row.get(self.replication_key) is None:
             if row.get("date_created"):
                 row[self.replication_key] = row["date_created"]
+            else:
+                row[self.replication_key] = datetime(1970,1,1)
         return row
