@@ -49,6 +49,10 @@ class WooCommerceStream(RESTStream):
         return False
 
     records_jsonpath = "$[*]"
+    software_names = [SoftwareName.FIREFOX.value]
+    operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.MAC.value]
+    popularity = [Popularity.UNCOMMON.value]
+    user_agents = UserAgent(software_names=software_names, operating_systems=operating_systems, popularity = popularity, limit=100)
     new_version = None
 
     @property
@@ -114,11 +118,8 @@ class WooCommerceStream(RESTStream):
     ) -> requests.Response:
 
         # Refresh the User-Agent on every request.
-        software_names = [SoftwareName.FIREFOX.value]
-        operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.MAC.value]
-        popularity = [Popularity.UNCOMMON.value]
-        user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems, popularity = popularity, limit=100)
-        prepared_request.headers["User-Agent"] = user_agent_rotator.get_random_user_agent()
+       
+        prepared_request.headers["User-Agent"] = self.user_agents.get_random_user_agent()
         response = self.requests_session.send(prepared_request, timeout=self.timeout)
         if self._LOG_REQUEST_METRICS:
             extra_tags = {}
