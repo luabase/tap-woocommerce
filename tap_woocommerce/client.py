@@ -48,7 +48,6 @@ class WooCommerceStream(RESTStream):
         return False
 
     records_jsonpath = "$[*]"
-    user_agents = UserAgent(software_engines="blink", software_names="chrome")
     new_version = None
 
     @property
