@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, Optional, cast, Callable
 import backoff
 import requests
 from random_user_agent.user_agent import UserAgent
+from random_user_agent.params import SoftwareName, OperatingSystem, Popularity
 from singer_sdk.authenticators import BasicAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
@@ -113,8 +114,11 @@ class WooCommerceStream(RESTStream):
     ) -> requests.Response:
 
         # Refresh the User-Agent on every request.
-        prepared_request.headers["User-Agent"] = self.user_agents.get_random_user_agent().strip()
-
+        software_names = [SoftwareName.FIREFOX.value]
+        operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.MAC.value]
+        popularity = [Popularity.UNCOMMON.value]
+        user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems, popularity = popularity, limit=100)
+        prepared_request.headers["User-Agent"] = user_agent_rotator.get_random_user_agent()
         response = self.requests_session.send(prepared_request, timeout=self.timeout)
         if self._LOG_REQUEST_METRICS:
             extra_tags = {}
