@@ -13,7 +13,7 @@ from singer_sdk.authenticators import BasicAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
-
+from backoff.types import Details
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
 
@@ -190,8 +190,9 @@ class WooCommerceStream(RESTStream):
                 requests.exceptions.ConnectionError,
                 ProtocolError
             ),
-            max_tries=8,
+            max_tries=10,
             factor=2,
+            on_backoff=self.backoff_handler,
         )(func)
         return decorator
 
@@ -208,3 +209,32 @@ class WooCommerceStream(RESTStream):
             else:
                 row[self.replication_key] = datetime(1970,1,1)
         return row
+    
+    @property
+    def timeout(self) -> int:
+        """Return the request timeout limit in seconds.
+
+        The default timeout is 300 seconds, or as defined by DEFAULT_REQUEST_TIMEOUT.
+
+        Returns:
+            The request timeout limit as number of seconds.
+        """
+        return 500
+    
+    def backoff_handler(self, details: Details) -> None:
+        """Adds additional behaviour prior to retry.
+
+        By default will log out backoff details, developers can override
+        to extend or change this behaviour.
+
+        Args:
+            details: backoff invocation details
+                https://github.com/litl/backoff#event-handlers
+        """
+        logging.info(
+            "Backing off {wait:0.1f} seconds after {tries} tries "
+            "calling function {target} with args {args} and kwargs "
+            "{kwargs}".format(**details)
+        )
+    
+    
