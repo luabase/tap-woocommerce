@@ -13,7 +13,6 @@ from singer_sdk.authenticators import BasicAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
-from backoff.types import Details
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
 
@@ -221,7 +220,7 @@ class WooCommerceStream(RESTStream):
         """
         return 500
     
-    def backoff_handler(self, details: Details) -> None:
+    def backoff_handler(self, details) -> None:
         """Adds additional behaviour prior to retry.
 
         By default will log out backoff details, developers can override
