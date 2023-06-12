@@ -117,8 +117,10 @@ class WooCommerceStream(RESTStream):
     ) -> requests.Response:
 
         # Refresh the User-Agent on every request.
-       
-        prepared_request.headers["User-Agent"] = self.user_agents.get_random_user_agent()
+        if not self.config.get("user_agent"):
+            prepared_request.headers["User-Agent"] = self.user_agents.get_random_user_agent()
+        else:
+            prepared_request.headers["User-Agent"] = self.config.get("user_agent")
         response = self.requests_session.send(prepared_request, timeout=self.timeout)
         if self._LOG_REQUEST_METRICS:
             extra_tags = {}
