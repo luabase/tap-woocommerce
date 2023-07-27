@@ -162,6 +162,10 @@ class WooCommerceStream(RESTStream):
 
     def validate_response(self, response: requests.Response) -> None:
         """Validate HTTP response."""
+        if response.status_code == 401:
+            raise FatalAPIError(
+                f"Unauthorized: {response.status_code} {response.reason} at {self.path}"
+            )
         if response.status_code >= 400 and self.config.get("ignore_server_errors"):
             self.error_counter += 1
         elif 500 <= response.status_code < 600 or response.status_code in [429, 403]:
