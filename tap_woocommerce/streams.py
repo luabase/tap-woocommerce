@@ -256,7 +256,7 @@ class OrdersStream(WooCommerceStream):
                             )
                         ),
                     ),
-                    th.Property("sku", th.CustomType({"type": ["boolean", "string", "null"]})),
+                    th.Property("sku", th.CustomType({"type": ["boolean", "string"]})),
                     th.Property("price", th.NumberType),
                 ),
             ),
