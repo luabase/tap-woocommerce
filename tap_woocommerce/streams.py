@@ -532,7 +532,7 @@ class SubscriptionStream(WooCommerceStream):
             th.ObjectType(
                 th.Property('id',th.NumberType),
                 th.Property('key',th.StringType),
-                th.Property('value',th.CustomType({"type": ["object", "string"], "properties": {}}))
+                th.Property('value',th.CustomType({"type": ["object", "string", "array"], "properties": {}}))
             )
         )),
         th.Property('line_items',th.ArrayType(
@@ -723,7 +723,7 @@ class CustomersStream(WooCommerceStream):
         ),
         th.Property('is_paying_customer',th.BooleanType),
         th.Property('avatar_url',th.StringType),
-        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
+        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string", "array"]}))),
         th.Property('_links',th.ObjectType(
             th.Property('self',th.ArrayType(
                 th.ObjectType(
