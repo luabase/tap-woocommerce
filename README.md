@@ -1,5 +1,8 @@
 # tap-woocommerce
 
+### TODO
+Add child stream (from orders) for refunds.
+
 [Singer](https://www.singer.io/) tap that extracts data from a [WooCommerce](https://woocommerce.com/) shop and produces JSON-formatted data following the [Singer spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
 Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
