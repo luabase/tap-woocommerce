@@ -14,6 +14,8 @@ from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 from http.client import RemoteDisconnected
+from requests.exceptions import ChunkedEncodingError
+
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
 
@@ -98,7 +100,7 @@ class WooCommerceStream(RESTStream):
             self.new_version = self.get_wc_version()
 
         params: dict = {}
-        params["per_page"] = 100
+        params["per_page"] = self.config.get("per_page",100)
         params["order"] = "asc"
         params["consumer_key"] = self.config.get("consumer_key"),
         params["consumer_secret"] = self.config.get("consumer_secret"),
@@ -145,11 +147,16 @@ class WooCommerceStream(RESTStream):
             for record in extract_jsonpath(
                 self.records_jsonpath, input=response.json()
             ):
-                record_mod_date = datetime.strptime(
-                    record[self.replication_key], "%Y-%m-%dT%H:%M:%S"
-                )
-                if record_mod_date > self.start_date:
-                    yield record
+                if record.get(self.replication_key) is not None:
+
+                    record_mod_date = datetime.strptime(
+                        record[self.replication_key], "%Y-%m-%dT%H:%M:%S"
+                    )
+                    
+                    if record_mod_date > self.start_date:
+                        yield record
+                else:
+                    yield record        
         else:
             yield from extract_jsonpath(self.records_jsonpath, input=response.json())
 
@@ -169,6 +176,8 @@ class WooCommerceStream(RESTStream):
             )
         if response.status_code >= 400 and self.config.get("ignore_server_errors"):
             self.error_counter += 1
+            # NOTE: We return because there's no need for further validation
+            return
         elif 500 <= response.status_code < 600 or response.status_code in [429, 403, 104]:
             msg = (
                 f"{response.status_code} Server Error: "
@@ -195,7 +204,8 @@ class WooCommerceStream(RESTStream):
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.ConnectionError,
                 ProtocolError,
-                RemoteDisconnected
+                RemoteDisconnected,
+                ChunkedEncodingError
             ),
             max_tries=10,
             factor=4,
@@ -215,8 +225,18 @@ class WooCommerceStream(RESTStream):
                 row[self.replication_key] = row["date_created"]
             else:
                 row[self.replication_key] = datetime(1970,1,1)
+                
+        if "parent_id" in row:
+            try:
+                row['parent_id'] = int(row['parent_id'])
+            except:
+                row['parent_id'] = 0
+
+        if "price" in row:
+            if isinstance(row['price'],bool):
+                row['price'] = str(row['price'])    
         return row
-    
+
     @property
     def timeout(self) -> int:
         """Return the request timeout limit in seconds.
@@ -227,7 +247,7 @@ class WooCommerceStream(RESTStream):
             The request timeout limit as number of seconds.
         """
         return 500
-    
+
     def backoff_handler(self, details) -> None:
         """Adds additional behaviour prior to retry.
 
@@ -243,5 +263,14 @@ class WooCommerceStream(RESTStream):
             "calling function {target} with args {args} and kwargs "
             "{kwargs}".format(**details)
         )
-    
-    
+
+    def get_records(self, context: Optional[dict]):
+        sync_products = self.config.get("sync_products", True)
+        if self.name == "products" and sync_products == False:
+            pass
+        else:
+            for record in self.request_records(context):
+                transformed_record = self.post_process(record, context)
+                if transformed_record is None:
+                    continue
+                yield transformed_record

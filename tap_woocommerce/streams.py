@@ -33,6 +33,11 @@ class ProductsStream(WooCommerceStream):
         th.Property("short_description", th.StringType),
         th.Property("sku", th.StringType),
         th.Property("brands", th.CustomType({"type": ["array", "string"]})),
+        th.Property("brand", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+            th.Property("url", th.StringType),
+        )),
         th.Property("price", th.CustomType({"type": ["string", "number"]})),
         th.Property("regular_price", th.CustomType({"type": ["string", "number"]})),
         th.Property("sale_price", th.CustomType({"type": ["string", "number"]})),
@@ -44,16 +49,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("total_sales", th.CustomType({"type": ["string", "number"]})),
         th.Property("virtual", th.BooleanType),
         th.Property("downloadable", th.BooleanType),
-        th.Property(
-            "downloads",
-            th.ArrayType(
-                th.ObjectType(
-                    th.Property("id", th.StringType),
-                    th.Property("name", th.StringType),
-                    th.Property("file", th.StringType),
-                )
-            ),
-        ),
+        th.Property("downloads", th.CustomType({"type": ["object", "array"]})),
         th.Property("download_limit", th.IntegerType),
         th.Property("download_expiry", th.IntegerType),
         th.Property("external_url", th.StringType),
@@ -85,8 +81,8 @@ class ProductsStream(WooCommerceStream):
         th.Property("rating_count", th.IntegerType),
         th.Property("related_ids", th.ArrayType(th.IntegerType)),
         th.Property("upsell_ids", th.ArrayType(th.IntegerType)),
-        th.Property("cross_sell_ids", th.ArrayType(th.IntegerType)),
-        th.Property("parent_id", th.IntegerType),
+        th.Property("cross_sell_ids", th.CustomType({"type": ["object", "array"]})),
+        th.Property("parent_id", th.NumberType),
         th.Property("purchase_note", th.StringType),
         th.Property(
             "categories",
@@ -155,7 +151,7 @@ class ProductsStream(WooCommerceStream):
         if record.get("type")=="variable":
             return {
                 "product_id": record["id"],
-            }
+            }  
 
 
 class OrdersStream(WooCommerceStream):
@@ -166,7 +162,7 @@ class OrdersStream(WooCommerceStream):
 
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),
-        th.Property("parent_id", th.IntegerType),
+        th.Property("parent_id", th.NumberType),
         th.Property("number", th.StringType),
         th.Property("order_key", th.StringType),
         th.Property("created_via", th.StringType),
@@ -350,6 +346,12 @@ class OrdersStream(WooCommerceStream):
             th.Property("set_paid", th.BooleanType),
         ),
     ).to_dict()
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        """Return a context dictionary for child streams."""
+        
+        return {
+                "order_id": record["id"],
+            }
 
 
 class CouponsStream(WooCommerceStream):
@@ -415,7 +417,7 @@ class ProductVarianceStream(WooCommerceStream):
     th.Property("purchasable", th.BooleanType),
     th.Property("virtual", th.BooleanType),
     th.Property("downloadable", th.BooleanType),
-    th.Property("downloads", th.ArrayType(th.StringType)),
+    th.Property("downloads", th.CustomType({"type": ["object", "array"]})),
     th.Property("download_limit", th.IntegerType),
     th.Property("download_expiry", th.IntegerType),
     th.Property("tax_status", th.StringType),
@@ -477,7 +479,7 @@ class SubscriptionStream(WooCommerceStream):
     replication_key = "date_modified"
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),
-        th.Property("parent_id", th.IntegerType),
+        th.Property("parent_id", th.NumberType),
         th.Property("status", th.StringType),
         th.Property("currency", th.StringType),
         th.Property("version", th.StringType),
@@ -760,3 +762,25 @@ class StoreSettingsStream(WooCommerceStream):
         th.Property("value", th.CustomType({"type": ["array", "string"]})),
         th.Property("group_id", th.StringType)
     ).to_dict()
+class OrderNotesStream(WooCommerceStream):
+    """Define settings stream."""
+
+    name = "order_notes"
+    path = "orders/{order_id}/notes"
+    primary_keys = ["id"]
+    parent_stream_type = OrdersStream
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.NumberType),
+        th.Property("order_id", th.NumberType),
+        th.Property("author", th.StringType),
+        th.Property("date_created", th.DateTimeType),
+        th.Property("date_created_gmt", th.DateTimeType),
+        th.Property("note", th.StringType),
+        th.Property("customer_note", th.BooleanType),
+        th.Property("_links", th.CustomType({"type": ["object", "string"]})),
+    ).to_dict()
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row['order_id']  = context.get("order_id")
+        return row
