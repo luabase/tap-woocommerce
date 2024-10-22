@@ -54,7 +54,12 @@ class WooCommerceStream(RESTStream):
     software_names = [SoftwareName.FIREFOX.value]
     operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.MAC.value]
     popularity = [Popularity.POPULAR.value]
-    user_agents = UserAgent(software_names=software_names, operating_systems=operating_systems, popularity = popularity, limit=100)
+    user_agents = UserAgent(
+        software_names=software_names,
+        operating_systems=operating_systems,
+        popularity=popularity,
+        limit=100,
+    )
     new_version = None
 
     @property
@@ -66,6 +71,19 @@ class WooCommerceStream(RESTStream):
             password=self.config.get("consumer_secret"),
         )
 
+    def check_endpoint_exists(self) -> bool:
+        """
+        Checks that the endpoint is available (not 404 status).
+        It's possible that the endpoint is available, but other errors are present.
+        This does not check for that possibility, that scenario is handled in the stream.
+        """
+        full_path = f"{self.url_base}{self.path}"
+        response = requests.get(
+            url=full_path,
+            auth=(self.config["consumer_key"], self.config["consumer_secret"]),
+        )
+        return response.status_code != 404
+
     def get_next_page_token(
         self, response: requests.Response, previous_token: Optional[Any]
     ) -> Optional[Any]:
@@ -73,7 +91,7 @@ class WooCommerceStream(RESTStream):
         # Get the total pages header
         total_pages = response.headers.get("X-WP-TotalPages")
         if response.status_code >= 400:
-            if self.error_counter>20:
+            if self.error_counter > 20:
                 return None
             previous_token = previous_token or 1
             total_pages = previous_token + 1
@@ -100,10 +118,10 @@ class WooCommerceStream(RESTStream):
             self.new_version = self.get_wc_version()
 
         params: dict = {}
-        params["per_page"] = self.config.get("per_page",100)
+        params["per_page"] = self.config.get("per_page", 100)
         params["order"] = "asc"
-        params["consumer_key"] = self.config.get("consumer_key"),
-        params["consumer_secret"] = self.config.get("consumer_secret"),
+        params["consumer_key"] = (self.config.get("consumer_key"),)
+        params["consumer_secret"] = (self.config.get("consumer_secret"),)
         if next_page_token:
             params["page"] = next_page_token
         if self.replication_key:
@@ -112,7 +130,9 @@ class WooCommerceStream(RESTStream):
                 params["modified_after"] = self.start_date.isoformat()
             else:
                 lookup_days = self.config.get("check_modify_date", 60)
-                params["after"] = (self.start_date - timedelta(days=lookup_days)).isoformat()
+                params["after"] = (
+                    self.start_date - timedelta(days=lookup_days)
+                ).isoformat()
         return params
 
     def _request(
@@ -121,7 +141,9 @@ class WooCommerceStream(RESTStream):
 
         # Refresh the User-Agent on every request.
         if not self.config.get("user_agent"):
-            prepared_request.headers["User-Agent"] = self.user_agents.get_random_user_agent()
+            prepared_request.headers[
+                "User-Agent"
+            ] = self.user_agents.get_random_user_agent()
         else:
             prepared_request.headers["User-Agent"] = self.config.get("user_agent")
         response = self.requests_session.send(prepared_request, timeout=self.timeout)
@@ -141,7 +163,7 @@ class WooCommerceStream(RESTStream):
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse the response and return an iterator of result rows."""
-        if response.status_code>=400 and self.config.get("ignore_server_errors"):
+        if response.status_code >= 400 and self.config.get("ignore_server_errors"):
             return []
         if self.replication_key and not self.new_version:
             for record in extract_jsonpath(
@@ -152,11 +174,11 @@ class WooCommerceStream(RESTStream):
                     record_mod_date = datetime.strptime(
                         record[self.replication_key], "%Y-%m-%dT%H:%M:%S"
                     )
-                    
+
                     if record_mod_date > self.start_date:
                         yield record
                 else:
-                    yield record        
+                    yield record
         else:
             yield from extract_jsonpath(self.records_jsonpath, input=response.json())
 
@@ -178,7 +200,11 @@ class WooCommerceStream(RESTStream):
             self.error_counter += 1
             # NOTE: We return because there's no need for further validation
             return
-        elif 500 <= response.status_code < 600 or response.status_code in [429, 403, 104]:
+        elif 500 <= response.status_code < 600 or response.status_code in [
+            429,
+            403,
+            104,
+        ]:
             msg = (
                 f"{response.status_code} Server Error: "
                 f"{response.reason} for path: {self.path}"
@@ -205,7 +231,7 @@ class WooCommerceStream(RESTStream):
                 requests.exceptions.ConnectionError,
                 ProtocolError,
                 RemoteDisconnected,
-                ChunkedEncodingError
+                ChunkedEncodingError,
             ),
             max_tries=10,
             factor=4,
@@ -224,17 +250,17 @@ class WooCommerceStream(RESTStream):
             if row.get("date_created"):
                 row[self.replication_key] = row["date_created"]
             else:
-                row[self.replication_key] = datetime(1970,1,1)
-                
+                row[self.replication_key] = datetime(1970, 1, 1)
+
         if "parent_id" in row:
             try:
-                row['parent_id'] = int(row['parent_id'])
+                row["parent_id"] = int(row["parent_id"])
             except:
-                row['parent_id'] = 0
+                row["parent_id"] = 0
 
         if "price" in row:
-            if isinstance(row['price'],bool):
-                row['price'] = str(row['price'])    
+            if isinstance(row["price"], bool):
+                row["price"] = str(row["price"])
         return row
 
     @property
