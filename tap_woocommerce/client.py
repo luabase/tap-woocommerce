@@ -134,6 +134,7 @@ class WooCommerceStream(RESTStream):
                 params["after"] = (
                     self.start_date - timedelta(days=lookup_days)
                 ).isoformat()
+        logging.info(f"consumer_key: {self.config.get('consumer_key')}")
         return params
 
     def _request(
