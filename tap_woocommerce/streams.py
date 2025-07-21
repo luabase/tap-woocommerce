@@ -158,6 +158,7 @@ class ProductsStream(WooCommerceStream):
             return {
                 "product_id": record["id"],
             }
+        return {}
 
 
 class OrdersStream(WooCommerceStream):
@@ -358,6 +359,13 @@ class OrdersStream(WooCommerceStream):
             ),
             th.Property("set_paid", th.BooleanType),
         ),
+        th.Property(
+            "attribution_metadata",
+            th.CustomType({
+                "type": "object",
+                "additionalProperties": True
+            })
+        )
     ).to_dict()
 
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
@@ -366,6 +374,22 @@ class OrdersStream(WooCommerceStream):
         return {
             "order_id": record["id"],
         }
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        processed_row = super().post_process(row, context)
+
+        if processed_row is None:
+            return None
+        
+        if processed_row.get("meta_data"):
+            # Get the order attribution metadata from the meta_data field
+            attribution_metadata = {}
+            for meta_data in processed_row["meta_data"]:
+                if "_wc_order_attribution_" in meta_data["key"]:
+                    attribution_metadata[meta_data["key"]] = meta_data["value"]
+            processed_row["attribution_metadata"] = attribution_metadata
+        
+        return processed_row
 
 
 class CouponsStream(WooCommerceStream):
@@ -888,5 +912,5 @@ class OrderNotesStream(WooCommerceStream):
         return response.status_code != 404
 
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
-        row["order_id"] = context.get("order_id")
+        row["order_id"] = context.get("order_id") if context else None
         return row
