@@ -166,7 +166,7 @@ class OrdersStream(WooCommerceStream):
     path = "orders"
     primary_keys = ["id"]
     replication_key = "date_modified"
-    is_sorted = True  # Enable resumable incremental sync
+    # is_sorted = True  # Enable resumable incremental sync
 
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),
